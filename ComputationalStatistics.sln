@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SeongWonLearning", "SeongWonLearning\SeongWonLearning.vcxproj", "{F2FB4184-1C29-43E1-8986-DF60C1D9C4D3}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PythonStatistics", "..\PythonStatistics\PythonStatistics\PythonStatistics.pyproj", "{441DA214-03E9-48BB-A90F-83E9F7C75E62}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PythonStatistics", "PythonStatistics\PythonStatistics.pyproj", "{441DA214-03E9-48BB-A90F-83E9F7C75E62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
