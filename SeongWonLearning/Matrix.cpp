@@ -25,7 +25,7 @@ Matrix Matrix::operator*(const Matrix& B) const
 	if (m_ != B.n_) throw std::invalid_argument("Size error!");
 	Matrix temp_matrix(n_, B.m_);
 	double temp_number{ double() };
-	for (size_t i = 0; i < n_; i++){
+	for (size_t i = 0; i < n_; i++) {
 		for (size_t j = 0; j < B.m_; j++) {
 			temp_number = 0;
 			for (size_t k = 0; k < m_; k++) temp_number += matrix_[i][k] * B.matrix_[k][j];
@@ -81,7 +81,7 @@ void Matrix::operator-=(const Matrix& B)
 
 void Matrix::operator*=(const Matrix& B)
 {
-	*this = std::move( operator*(B) );
+	*this = std::move(operator*(B));
 }
 
 void Matrix::operator^=(const unsigned int& k)
@@ -89,7 +89,7 @@ void Matrix::operator^=(const unsigned int& k)
 	*this = std::move(operator^(k));
 }
 
-void Matrix::set_size(const size_t& n, const size_t& m) 
+void Matrix::set_size(const size_t& n, const size_t& m)
 {
 	if (!matrix_.empty()) std::cout << "Matrix is not empty!" << std::endl;
 	else n_ = n, m_ = m;
@@ -121,4 +121,33 @@ void Matrix::PrintMatrix() const
 		}
 		std::cout << std::endl;
 	}
+}
+
+LU LU_Decomp(const Matrix& matrix)
+{
+	LU lu(matrix);
+	
+
+	return lu;
+}
+
+void LU::Decomposition()
+{
+	if (n_ >= m_) {
+
+		for (size_t i = 0; i < m_; i++){
+
+			for (size_t j = 0; j < n_; j++){
+
+				for (size_t k = i + 1; k < m_; k++)
+					l_[k][j] /= l_[i][j];
+				l_[i][j] = 1;
+				
+
+			}
+
+		}
+
+	}
+
 }

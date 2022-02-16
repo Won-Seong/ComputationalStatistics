@@ -2,8 +2,11 @@
 #include <iostream>
 #include <vector>
 
+LU LU_Decomp(const Matrix& matrix);
+
 class Matrix : public std::exception {
-	using Space = std::vector< std::vector<double> >;
+	using Vector = std::vector<double>;
+	using Space = std::vector< Vector >;
 public://Basic matrix ops
 	Matrix operator+(const Matrix&) const;//A + B
 	Matrix operator-(const Matrix&) const;//A - B
@@ -19,10 +22,11 @@ public://Basic matrix ops
 public://Manipulate
 	void Clear() { n_ = double(), m_ = double(); matrix_.clear(); };
 	bool IsEmpty() const { return matrix_.empty(); }
-	void set_size(const size_t& n, const size_t& m) ;
+	void set_size(const size_t& n, const size_t& m);
 	size_t get_n() const;
 	size_t get_m() const;
 	Space get_matrix() const;
+	Vector& operator[](const size_t& i) { return matrix_[i]; }
 public://Input and Output
 	void PrintMatrix() const;//Print the matrix 
 public://Constructor and Destructor
@@ -51,8 +55,6 @@ public://Constructor and Destructor
 		matrix.m_ = double();
 		matrix.matrix_.clear();
 	}
-private://Internal utility function
-	void QR_Decomposition();
 private:
 	size_t n_, m_;//The matrix have n rows and m columns.
 	Space matrix_;
@@ -62,3 +64,41 @@ class OrthogonalMatrix : public Matrix {
 public:
 	Matrix Inverse() const { return Transpose(); }
 };
+
+class Decomposition : public std::exception {
+public:
+
+public://Const and Dest
+	Decomposition() {}
+};
+
+class QR : public Decomposition {
+public:
+
+private:
+	Matrix q_;
+	Matrix r_;
+};
+
+class LU : public Decomposition {
+public:
+	LU(const Matrix& matrix) : n_(matrix.get_n()), m_(matrix.get_m()) {
+		if (n_ >= m_) 
+			l_.set_size(n_, m_), u_.set_size(m_, m_), l_ = matrix;
+		else 
+			l_.set_size(n_, n_), u_.set_size(n_, m_), u_ = matrix;
+	}
+	~LU() { l_.Clear(); u_.Clear(); }
+public:
+	friend LU LU_Decomp(const Matrix& matrix);
+private:
+	void Decomposition();
+private:
+	size_t n_;
+	size_t m_;
+	Matrix l_;
+	Matrix u_;
+};
+
+
+
