@@ -60,7 +60,7 @@ Matrix Matrix::Transpose() const
 
 Matrix Matrix::Inverse() const
 {
-
+	return Matrix();
 }
 
 void Matrix::operator+=(const Matrix& B)
@@ -92,7 +92,11 @@ void Matrix::operator^=(const unsigned int& k)
 void Matrix::set_size(const size_t& n, const size_t& m)
 {
 	if (!matrix_.empty()) std::cout << "Matrix is not empty!" << std::endl;
-	else n_ = n, m_ = m;
+	else {
+		n_ = n, m_ = m;
+		matrix_.resize(n_);
+		for (auto& itr : matrix_) itr.resize(m_, double());
+	}
 }
 
 size_t Matrix::get_n() const
@@ -123,31 +127,58 @@ void Matrix::PrintMatrix() const
 	}
 }
 
-LU LU_Decomp(const Matrix& matrix)
-{
-	LU lu(matrix);
-	
-
-	return lu;
-}
-
 void LU::Decomposition()
 {
-	if (n_ >= m_) {
+	if (n_ <= m_) {
 
-		for (size_t i = 0; i < m_; i++){
+		for (size_t i = 0; i < n_; i++){
+			l_[i][i] = u_[i][i];
+			for (size_t k = i + 1; k < n_; k++)
+				l_[k][i] = u_[k][i] , u_[i][k] /= u_[i][i];
+			u_[i][i] = 1;
 
-			for (size_t j = 0; j < n_; j++){
-
-				for (size_t k = i + 1; k < m_; k++)
-					l_[k][j] /= l_[i][j];
-				l_[i][j] = 1;
-				
+			for (size_t j = i + 1; j < n_; j++) {
+				double temp{ u_[j][i] };
+				for (size_t k = i; k < m_; k++)
+					u_[j][k] -= u_[i][k] * temp;
 
 			}
 
 		}
 
 	}
+	else {
 
+		for (size_t i = 0; i < m_; i++) {
+
+			u_[i][i] = l_[i][i];
+
+			for (size_t k = i + 1; k < m_; k++)
+				u_[i][k] = l_[i][k], l_[k][i] /= l_[i][i];
+			l_[i][i] = 1;
+
+			for (size_t j = i + 1; j < m_; j++) {
+				double temp{ l_[i][j] };
+				for (size_t k = i; k < n_; k++)
+					l_[k][j] -= l_[k][i] * temp;
+
+			}
+
+		}
+	}
+
+}
+
+void LU::PrintLU() const
+{
+	std::cout << "L" << '\n';
+	l_.PrintMatrix();
+	std::cout << "U" << '\n';
+	u_.PrintMatrix();
+}
+
+LU LU_Decomp(const Matrix& matrix)
+{
+	LU lu(matrix);
+	return std::move(lu);
 }

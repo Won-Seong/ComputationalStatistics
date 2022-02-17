@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 
-LU LU_Decomp(const Matrix& matrix);
 
 class Matrix : public std::exception {
 	using Vector = std::vector<double>;
@@ -20,7 +19,7 @@ public://Basic matrix ops
 	Matrix Transpose() const;
 	Matrix Inverse() const;
 public://Manipulate
-	void Clear() { n_ = double(), m_ = double(); matrix_.clear(); };
+	void Clear() { n_ = size_t(), m_ = size_t(); matrix_.clear(); };
 	bool IsEmpty() const { return matrix_.empty(); }
 	void set_size(const size_t& n, const size_t& m);
 	size_t get_n() const;
@@ -30,7 +29,7 @@ public://Manipulate
 public://Input and Output
 	void PrintMatrix() const;//Print the matrix 
 public://Constructor and Destructor
-	Matrix() : n_(double()), m_(double()) {}
+	Matrix() : n_(size_t()), m_(size_t()) {}
 	Matrix(const size_t& n, const size_t& m) :n_(n), m_(m) {
 		matrix_.resize(n);
 		for (auto& itr : matrix_) itr.resize(m);
@@ -38,22 +37,24 @@ public://Constructor and Destructor
 	Matrix(const Matrix& matrix) :n_(matrix.n_), m_(matrix.m_), matrix_(matrix.matrix_) {}
 	Matrix(Matrix&& matrix) noexcept : n_(std::move(matrix.n_)), m_(std::move(matrix.m_)) {
 		matrix_ = std::move(matrix.matrix_);
-		matrix.n_ = double();
-		matrix.m_ = double();
+		matrix.n_ = size_t();
+		matrix.m_ = size_t();
 		matrix.matrix_.clear();
 	}
 	Matrix& operator=(const Matrix& matrix) {
 		n_ = matrix.n_;
 		m_ = matrix.m_;
 		matrix_ = matrix.matrix_;
+		return *this;
 	}
 	Matrix& operator=(Matrix&& matrix) noexcept {
 		n_ = matrix.n_;
 		m_ = matrix.m_;
 		matrix_ = std::move(matrix.matrix_);
-		matrix.n_ = double();
-		matrix.m_ = double();
+		matrix.n_ = size_t();
+		matrix.m_ = size_t();
 		matrix.matrix_.clear();
+		return *this;
 	}
 private:
 	size_t n_, m_;//The matrix have n rows and m columns.
@@ -83,16 +84,24 @@ private:
 class LU : public Decomposition {
 public:
 	LU(const Matrix& matrix) : n_(matrix.get_n()), m_(matrix.get_m()) {
-		if (n_ >= m_) 
+		if (n_ > m_) 
 			l_.set_size(n_, m_), u_.set_size(m_, m_), l_ = matrix;
 		else 
 			l_.set_size(n_, n_), u_.set_size(n_, m_), u_ = matrix;
+		Decomposition();
+	}
+	LU(Matrix&& matrix) : n_(matrix.get_n()), m_(matrix.get_m()) {
+		if (n_ > m_)
+			l_.set_size(n_, m_), u_.set_size(m_, m_), l_ = std::move(matrix);
+		else
+			l_.set_size(n_, n_), u_.set_size(n_, m_), u_ = std::move(matrix);
+		Decomposition();
+		matrix.Clear();
 	}
 	~LU() { l_.Clear(); u_.Clear(); }
 public:
-	friend LU LU_Decomp(const Matrix& matrix);
-private:
 	void Decomposition();
+	void PrintLU() const;
 private:
 	size_t n_;
 	size_t m_;
@@ -100,5 +109,4 @@ private:
 	Matrix u_;
 };
 
-
-
+LU LU_Decomp(const Matrix&);
