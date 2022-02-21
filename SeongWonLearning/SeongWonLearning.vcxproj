@@ -139,9 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GradientDescent.h" />
     <ClInclude Include="Matrix.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GradientDescent.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix.cpp" />
   </ItemGroup>

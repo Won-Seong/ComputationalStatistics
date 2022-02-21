@@ -37,7 +37,7 @@ Matrix Matrix::operator*(const Matrix& B) const
 
 Matrix Matrix::operator^(const unsigned int& k) const
 {
-	if (n_ != m_) throw std::logic_error("This matrix is not square!");
+	if (!IsSquare()) throw std::logic_error("This matrix is not square!");
 	Matrix temp_matrix{ *this };
 	for (unsigned int i = 0; i < k; i++)
 		temp_matrix *= temp_matrix;
@@ -60,7 +60,13 @@ Matrix Matrix::Transpose() const
 
 Matrix Matrix::Inverse() const
 {
-	return Matrix();
+	if (!IsSquare()) throw std::logic_error("It's not square!");
+	Matrix inverse_(get_n(), get_m());
+	inverse_.SetIdentity();
+	for (size_t i = 0; i < n_; i++)
+	{
+		
+	}
 }
 
 void Matrix::operator+=(const Matrix& B)
@@ -97,6 +103,22 @@ void Matrix::set_size(const size_t& n, const size_t& m)
 		matrix_.resize(n_);
 		for (auto& itr : matrix_) itr.resize(m_, double());
 	}
+}
+
+void Matrix::StdInsert()
+{
+	for (size_t i = 0; i < n_; i++)
+		for (size_t j = 0; j < m_; j++) 
+			std::cin >> matrix_[i][j];
+}
+
+void Matrix::SetIdentity()
+{
+	if (!IsSquare()) throw std::logic_error("It's not square!");
+	for (size_t i = 0; i < n_; i++)
+		for (size_t j = 0; j < n_; j++)
+			if (i == j) matrix_[i][j] = 1; 
+			else matrix_[i][j] = 0;
 }
 
 size_t Matrix::get_n() const
@@ -169,6 +191,15 @@ void LU::Decomposition()
 
 }
 
+double LU::Determinant() const
+{
+	if (n_ != m_) throw std::logic_error("It's not square!");
+	double det_l{ 1 };
+	double det_u{ 1 };
+	for (size_t i = 0; i < n_; i++) det_l *= l_[i][i], det_u *= u_[i][i];
+	return det_l * det_u;
+}
+
 void LU::PrintLU() const
 {
 	std::cout << "L" << '\n';
@@ -181,4 +212,10 @@ LU LU_Decomp(const Matrix& matrix)
 {
 	LU lu(matrix);
 	return std::move(lu);
+}
+
+Matrix OrthogonalMatrix::Inverse() const
+{
+	if (!IsSquare()) throw std::logic_error("It's not square!");
+	return Transpose();
 }

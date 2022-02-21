@@ -2,9 +2,10 @@
 #include <iostream>
 #include <vector>
 
+using Vector = std::vector<double>;
 
 class Matrix : public std::exception {
-	using Vector = std::vector<double>;
+protected:
 	using Space = std::vector< Vector >;
 public://Basic matrix ops
 	Matrix operator+(const Matrix&) const;//A + B
@@ -22,12 +23,14 @@ public://Manipulate
 	void Clear() { n_ = size_t(), m_ = size_t(); matrix_.clear(); };
 	bool IsEmpty() const { return matrix_.empty(); }
 	void set_size(const size_t& n, const size_t& m);
+	void StdInsert();
 	size_t get_n() const;
 	size_t get_m() const;
 	Space get_matrix() const;
 	Vector& operator[](const size_t& i) { return matrix_[i]; }
-public://Input and Output
+	Vector operator[](const size_t& i) const { return matrix_[i]; }
 	void PrintMatrix() const;//Print the matrix 
+	bool IsSquare() const { return n_ == m_; }
 public://Constructor and Destructor
 	Matrix() : n_(size_t()), m_(size_t()) {}
 	Matrix(const size_t& n, const size_t& m) :n_(n), m_(m) {
@@ -56,14 +59,16 @@ public://Constructor and Destructor
 		matrix.matrix_.clear();
 		return *this;
 	}
-private:
+protected:
+	void SetIdentity();//If the matrix is square, set it to identity.
+protected:
 	size_t n_, m_;//The matrix have n rows and m columns.
 	Space matrix_;
 };
 
 class OrthogonalMatrix : public Matrix {
 public:
-	Matrix Inverse() const { return Transpose(); }
+	Matrix Inverse() const;
 };
 
 class Decomposition : public std::exception {
@@ -99,8 +104,9 @@ public:
 		matrix.Clear();
 	}
 	~LU() { l_.Clear(); u_.Clear(); }
-public:
+public://Manipulate
 	void Decomposition();
+	double Determinant() const;
 	void PrintLU() const;
 private:
 	size_t n_;
