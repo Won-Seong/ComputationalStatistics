@@ -28,8 +28,8 @@ Matrix Matrix::operator*(const Matrix& B) const
 	for (size_t i = 0; i < n_; i++) {
 		for (size_t j = 0; j < B.m_; j++) {
 			temp_number = 0;
-			for (size_t k = 0; k < m_; k++) temp_number += matrix_[i][k] * B.matrix_[k][j];
-			temp_matrix.matrix_[i][j] = temp_number;
+			for (size_t k = 0; k < m_; k++) temp_number += matrix_[k][i] * B.matrix_[j][k];
+			temp_matrix.matrix_[j][i] = temp_number;
 		}
 	}
 	return temp_matrix;
@@ -39,8 +39,8 @@ Matrix Matrix::operator^(const unsigned int& k) const
 {
 	if (!IsSquare()) throw std::logic_error("This matrix is not square!");
 	Matrix temp_matrix{ *this };
-	for (unsigned int i = 0; i < k; i++)
-		temp_matrix *= temp_matrix;
+	for (unsigned int i = 1; i < k; i++)
+		temp_matrix *= *this;
 	return temp_matrix;
 }
 
@@ -52,22 +52,22 @@ Matrix Matrix::Power(const unsigned int& k) const
 Matrix Matrix::Transpose() const
 {
 	Matrix temp_matrix(m_, n_);
-	for (size_t i = 0; i < m_; i++)
-		for (size_t j = 0; j < n_; j++)
-			temp_matrix.matrix_[i][j] = matrix_[j][i];
+	for (size_t i = 0; i < n_; i++)
+		for (size_t j = 0; j < m_; j++)
+			temp_matrix[i][j] = matrix_[j][i];
 	return temp_matrix;
 }
 
-Matrix Matrix::Inverse() const
-{
-	if (!IsSquare()) throw std::logic_error("It's not square!");
-	Matrix inverse_(get_n(), get_m());
-	inverse_.SetIdentity();
-	for (size_t i = 0; i < n_; i++)
-	{
-		
-	}
-}
+//Matrix Matrix::Inverse() const
+//{
+//	if (!IsSquare()) throw std::logic_error("It's not square!");
+//	Matrix inverse_(get_n(), get_m());
+//	inverse_.SetIdentity();
+//	for (size_t i = 0; i < n_; i++)
+//	{
+//		
+//	}
+//}
 
 void Matrix::operator+=(const Matrix& B)
 {
@@ -100,8 +100,8 @@ void Matrix::set_size(const size_t& n, const size_t& m)
 	if (!matrix_.empty()) std::cout << "Matrix is not empty!" << std::endl;
 	else {
 		n_ = n, m_ = m;
-		matrix_.resize(n_);
-		for (auto& itr : matrix_) itr.resize(m_, double());
+		matrix_.resize(m_);
+		for (auto& itr : matrix_) itr.resize(n_, double());
 	}
 }
 
@@ -109,7 +109,7 @@ void Matrix::StdInsert()
 {
 	for (size_t i = 0; i < n_; i++)
 		for (size_t j = 0; j < m_; j++) 
-			std::cin >> matrix_[i][j];
+			std::cin >> matrix_[j][i];
 }
 
 void Matrix::SetIdentity()
@@ -140,53 +140,73 @@ void Matrix::PrintMatrix() const
 {
 	if (IsEmpty()) std::cout << "It's empty!" << std::endl;
 	else {
-		for (const auto& itr : matrix_) {
-			for (const auto& itr_2 : itr)
-				std::cout << itr_2 << ' ';
+		for (size_t i = 0; i < n_; i++)
+		{
+			for (size_t j = 0; j < m_; j++)
+				std::cout << matrix_[j][i] << ' ';
 			std::cout << '\n';
 		}
 		std::cout << std::endl;
 	}
 }
 
-void LU::Decomposition()
+void LU::LU_Decomposition()
 {
-	if (n_ <= m_) {
+	if (n_ < m_) {
 
 		for (size_t i = 0; i < n_; i++){
 			l_[i][i] = u_[i][i];
 			for (size_t k = i + 1; k < n_; k++)
-				l_[k][i] = u_[k][i] , u_[i][k] /= u_[i][i];
-			u_[i][i] = 1;
+				l_[i][k] = u_[i][k] , u_[k][i] /= u_[i][i];
+			l_[i][i] = 1;
 
 			for (size_t j = i + 1; j < n_; j++) {
-				double temp{ u_[j][i] };
+				double temp{ u_[i][j] };
 				for (size_t k = i; k < m_; k++)
-					u_[j][k] -= u_[i][k] * temp;
+					u_[k][j] -= u_[k][i] * temp;
 
 			}
 
 		}
 
 	}
-	else {
+	else if(n_ > m_) {
 
 		for (size_t i = 0; i < m_; i++) {
 
 			u_[i][i] = l_[i][i];
 
 			for (size_t k = i + 1; k < m_; k++)
-				u_[i][k] = l_[i][k], l_[k][i] /= l_[i][i];
-			l_[i][i] = 1;
+				u_[k][i] = l_[k][i], l_[i][k] /= l_[i][i];
+			u_[i][i] = 1;
 
 			for (size_t j = i + 1; j < m_; j++) {
-				double temp{ l_[i][j] };
+				double temp{ l_[j][i] };
 				for (size_t k = i; k < n_; k++)
-					l_[k][j] -= l_[k][i] * temp;
+					l_[j][k] -= l_[i][k] * temp;
 
 			}
 
 		}
+	}
+	else {
+
+		for (size_t i = 0; i < m_; i++) {
+			u_[i][i] = l_[i][i];
+
+			for (size_t k = i + 1; k < m_; k++)
+				u_[k][i] = l_[k][i], l_[i][k] /= l_[i][i];
+			l_[i][i] = 1;
+
+			for (size_t j = i + 1; j < m_; j++) {
+				double temp{ l_[j][i] };
+				for (size_t k = i; k < n_; k++)
+					l_[j][k] -= l_[i][k] * temp;
+
+			}
+
+		}
+
 	}
 
 }
@@ -206,6 +226,8 @@ void LU::PrintLU() const
 	l_.PrintMatrix();
 	std::cout << "U" << '\n';
 	u_.PrintMatrix();
+	std::cout << "LU" << '\n';
+	l_.operator*(u_).PrintMatrix();
 }
 
 LU LU_Decomp(const Matrix& matrix)
@@ -214,8 +236,98 @@ LU LU_Decomp(const Matrix& matrix)
 	return std::move(lu);
 }
 
+Vector operator+(const Vector& x, const Vector& y)
+{
+	if (x.size() != y.size()) throw std::invalid_argument("Different size!");
+	Vector temp{ x };
+	for (size_t i = 0; i < x.size(); i++)
+		temp[i] += y[i];
+	return std::move(temp);
+}
+
+Vector operator-(const Vector& x, const Vector& y)
+{
+	if (x.size() != y.size()) throw std::invalid_argument("Different size!");
+	Vector temp{ x };
+	for (size_t i = 0; i < x.size(); i++)
+		temp[i] += y[i];
+	return std::move(temp);
+}
+
+double Dot(const Vector& x, const Vector& y)
+{
+	if (x.size() != y.size()) throw std::invalid_argument("Different size!");
+	double temp{ 0 };
+	for (size_t i = 0; i < x.size(); i++)
+		temp += x[i] * y[i];
+	return temp;
+}
+
+bool IsOrthogonal(const Vector& x, const Vector& y)
+{
+	return Dot(x, y) == 0;
+}
+
+double L2Norm(const Vector& x)
+{
+	return std::sqrt(Dot(x , x));
+}
+
+double L1Norm(const Vector& x)
+{
+	double temp{ 0 };
+	for (const auto& itr : x) temp += std::abs(itr);
+	return temp;
+}
+
+std::ostream& operator<<(std::ostream& os, const Vector& x)
+{
+	for (const auto& itr : x)
+		os << itr << ' ';
+	return os;
+}
+
+std::istream& operator>>(std::istream& is, Vector& x)
+{
+	for (auto& itr : x)
+		is >> itr;
+	return is;
+}
+
 Matrix OrthogonalMatrix::Inverse() const
 {
 	if (!IsSquare()) throw std::logic_error("It's not square!");
 	return Transpose();
+}
+
+void QR::PrintQR() const
+{
+	std::cout << "Q" << '\n';
+	q_.PrintMatrix();
+	std::cout << "R" << '\n';
+	r_.PrintMatrix();
+	std::cout << "QR" << '\n';
+	q_.operator*(r_).PrintMatrix();
+}
+
+OrthogonalMatrix QR::GramSchmidt(const Matrix& matrix)
+{
+	OrthogonalMatrix temp_q(matrix.get_n(), matrix.get_m());
+	for (size_t i = 0; i < temp_q.get_n(); i++)
+		for (size_t j = 0; j < temp_q.get_m(); j++)
+			temp_q[j][i] = matrix[j][i];
+
+	for (size_t i = 0; i < m_; i++){
+		//Orthogonalize
+		for (size_t j = 0; j < i; j++) {
+			double temp{ Dot(temp_q[i], temp_q[j]) };
+			for (size_t k = 0; k < n_; k++)
+				temp_q[i][k] -= temp_q[j][k] * temp;
+		}
+		//Normalize(q_k = A_k / ||A_k||)
+		double norm{ L2Norm(temp_q[i]) };
+		for (auto& itr : temp_q[i]) itr /= norm;
+	}
+	r_ = temp_q.Transpose() * matrix;//R = Q^{T}A
+	return temp_q;
 }

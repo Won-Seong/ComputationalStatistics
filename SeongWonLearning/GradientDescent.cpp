@@ -6,7 +6,7 @@ Vector LinearGradientDescent::Function(const Vector& w) const
 	temp.resize(m_);
 	for (size_t i = 0; i < n_; i++)
 		for (size_t j = 0; j < m_; j++) 
-			temp[j] += std::pow(w[j] * x_[i][j] - y_[i], 2);
+			temp[j] += std::pow(w[j] * x_[j][i] - y_[i], 2);
 	return temp;
 }
 
@@ -16,7 +16,7 @@ Vector LinearGradientDescent::D_Function(const Vector& w) const
 	temp.resize(m_);
 	for (size_t i = 0; i < n_; i++) 
 		for (size_t j = 0; j < m_; j++) 
-			temp[j] += (w[j] * x_[i][j] - y_[i]) * 2 * x_[i][j];
+			temp[j] += (w[j] * x_[j][i] - y_[i]) * 2 * x_[j][i];
 	return temp;
 }
 

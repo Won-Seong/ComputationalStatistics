@@ -5,24 +5,13 @@ int main() {
 	size_t n, m;
 	std::cin >> n >> m;
 	Matrix A(n, m);
-	Vector B(n);
-
 	A.StdInsert();
-	for (auto& itr : B)
-		std::cin >> itr;
-	LinearGradientDescent grad(A, B);
-
 	A.PrintMatrix();
-	for (auto& itr : B)
-		std::cout << itr << ' ';
-	std::cout << std::endl;
+	A.Transpose().PrintMatrix();
 
-	try
-	{
-		grad.FindWeight(30, 0.01);
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << e.what() << std::endl;
-	}
+	LU lu(A);
+	lu.PrintLU();
+
+	QR qr(A);
+	qr.PrintQR();
 }
