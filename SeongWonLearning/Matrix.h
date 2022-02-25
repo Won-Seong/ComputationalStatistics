@@ -11,6 +11,7 @@ public://Basic matrix ops
 	Matrix operator+(const Matrix&) const;//A + B
 	Matrix operator-(const Matrix&) const;//A - B
 	Matrix operator*(const Matrix&) const;//A * B(Matrix mul)
+	Vector operator*(const Vector&) const;//A * x
 	Matrix operator^(const unsigned int&) const;//A^k
 	void operator+=(const Matrix&);
 	void operator-=(const Matrix&);
@@ -31,6 +32,7 @@ public://Manipulate
 	Vector operator[](const size_t& i) const { return matrix_[i]; }
 	void PrintMatrix() const;//Print the matrix 
 	bool IsSquare() const { return n_ == m_; }
+	bool IsOrthogonal() const;
 public://Constructor and Destructor
 	Matrix() : n_(size_t()), m_(size_t()) {}
 	Matrix(const size_t& n, const size_t& m) :n_(n), m_(m) {
@@ -71,6 +73,10 @@ public://Const and Dest
 	OrthogonalMatrix() : Matrix() {}
 	OrthogonalMatrix(const size_t& n, const size_t& m) : Matrix(n, m) {};
 	OrthogonalMatrix(const OrthogonalMatrix& matrix) : Matrix(matrix) {}
+	OrthogonalMatrix(const Matrix& matrix) {
+		if (matrix.IsOrthogonal()) *this = matrix;
+		else throw std::invalid_argument("It's not orthogonal!");
+	}
 	OrthogonalMatrix(OrthogonalMatrix&& matrix) noexcept : Matrix(std::move(matrix)) {}
 	OrthogonalMatrix& operator=(const OrthogonalMatrix& matrix) {
 		n_ = matrix.n_;
@@ -115,10 +121,13 @@ public://Const and Dest
 		matrix.Clear();
 	}
 	~QR() { q_.Clear(); r_.Clear(); }
+public:
+	Vector Solve(const Vector&) const;//Solve a linear problem
 public://Manipulate
 	void PrintQR() const;
 private:
 	OrthogonalMatrix GramSchmidt(const Matrix& matrix);
+	OrthogonalMatrix GramSchmidt(Matrix&& matrix);
 private:
 	OrthogonalMatrix q_;
 	Matrix r_;
