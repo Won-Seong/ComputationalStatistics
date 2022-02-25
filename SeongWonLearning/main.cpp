@@ -10,7 +10,15 @@ int main() {
 	LU lu(A);
 	lu.PrintLU();
 
-	QR qr(A);
-	qr.PrintQR();
+	try
+	{
+		QR qr(A);
+		qr.PrintQR();
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << '\n';
+	}
+	
 	
 }

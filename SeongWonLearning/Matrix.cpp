@@ -168,6 +168,39 @@ bool Matrix::IsOrthogonal() const
 	return true;
 }
 
+unsigned int Matrix::Rank() const
+{
+	unsigned int rank{ 0 };
+	bool flag{ false };
+	Matrix temp_matrix{ *this };
+	for (size_t i = 0; i < m_; i++){
+		flag = false;
+		for (const auto& itr : temp_matrix[i]){
+			if (itr != 0) flag = true;
+		}
+		
+		if (!flag) break;
+		else rank++;
+
+		for (size_t j = i + 1; j < m_; j++){
+			double temp{temp_matrix[j][i]};
+			for (size_t k = 0; k < n_; k++)
+				temp_matrix[j][k] -= temp;
+		}
+	}
+	return rank;
+}
+
+bool Matrix::IsColEqualRank() const
+{
+	return m_ == Rank();
+}
+
+bool Matrix::IsInvertible() const
+{
+	return IsSquare() && IsColEqualRank();
+}
+
 void LU::LU_Decomposition()
 {
 	if (n_ < m_) {
@@ -188,45 +221,22 @@ void LU::LU_Decomposition()
 		}
 
 	}
-	else if(n_ > m_) {
-
-		for (size_t i = 0; i < m_; i++) {
-
-			u_[i][i] = l_[i][i];
-
-			for (size_t k = i + 1; k < m_; k++)
-				u_[k][i] = l_[k][i], l_[i][k] /= l_[i][i];
-			u_[i][i] = 1;
-
-			for (size_t j = i + 1; j < m_; j++) {
-				double temp{ l_[j][i] };
-				for (size_t k = i; k < n_; k++)
-					l_[j][k] -= l_[i][k] * temp;
-
-			}
-
-		}
-	}
-	else {
-
+	else if(n_ >= m_) {
 		for (size_t i = 0; i < m_; i++) {
 			u_[i][i] = l_[i][i];
-
 			for (size_t k = i + 1; k < m_; k++)
-				u_[k][i] = l_[k][i], l_[i][k] /= l_[i][i];
+				u_[k][i] = l_[k][i];
+			for (size_t k = i + 1; k < n_; k++)
+				l_[i][k] /= l_[i][i];
 			l_[i][i] = 1;
-
 			for (size_t j = i + 1; j < m_; j++) {
 				double temp{ l_[j][i] };
 				for (size_t k = i; k < n_; k++)
 					l_[j][k] -= l_[i][k] * temp;
 
 			}
-
 		}
-
 	}
-
 }
 
 double LU::Determinant() const
@@ -354,16 +364,16 @@ void QR::PrintQR() const
 	q_.operator*(r_).PrintMatrix();
 }
 
+
 OrthogonalMatrix QR::GramSchmidt(const Matrix& matrix)
 {
+	if (matrix.IsColEqualRank()) throw std::invalid_argument("All column ain't independent!");
 	if (n_ >= m_) {
 		OrthogonalMatrix temp_q(matrix.get_n(), matrix.get_m());
 		for (size_t i = 0; i < temp_q.get_n(); i++)
 			for (size_t j = 0; j < temp_q.get_m(); j++)
 				temp_q[j][i] = matrix[j][i];
-
 		Matrix table(m_, m_);
-
 		for (size_t i = 0; i < m_; i++) {
 			//Orthogonalize
 			for (size_t j = 0; j < i; j++) {
@@ -373,32 +383,30 @@ OrthogonalMatrix QR::GramSchmidt(const Matrix& matrix)
 			//Normalize(q_k = A_k / ||A_k||)
 			double norm{ L2Norm(temp_q[i]) };
 			for (auto& itr : temp_q[i]) itr /= norm;
-
 			for (size_t j = i + 1; j < m_; j++)
-				table[i][j] = Dot(temp_q[i], temp_q[j]);
+				table[i][j] = Dot(temp_q[i], temp_q[j]);//table[i][j] == q_i dot a_j
 		}
-
-		table.PrintMatrix();
-
 		r_ = temp_q.Transpose() * matrix;//R = Q^{T}A
 		return temp_q;
-
 	}
 	else {
 		OrthogonalMatrix temp_q(matrix.get_n() , matrix.get_n() );
 		for (size_t i = 0; i < temp_q.get_n(); i++)
 			for (size_t j = 0; j < temp_q.get_n(); j++)
 				temp_q[j][i] = matrix[j][i];
+		Matrix table(n_, n_);
 		for (size_t i = 0; i < n_; i++) {
 			//Orthogonalize
 			for (size_t j = 0; j < i; j++) {
-				double temp{ Dot(temp_q[i], temp_q[j]) };
 				for (size_t k = 0; k < n_; k++)
-					temp_q[i][k] -= temp_q[j][k] * temp;
+					temp_q[i][k] -= temp_q[j][k] * table[j][i];
 			}
+
 			//Normalize(q_k = A_k / ||A_k||)
 			double norm{ L2Norm(temp_q[i]) };
 			for (auto& itr : temp_q[i]) itr /= norm;
+			for (size_t j = i + 1; j < n_; j++)
+				table[i][j] = Dot(temp_q[i], temp_q[j]);//table[i][j] == q_i dot a_j
 		}
 		r_ = temp_q.Transpose() * matrix;//R = Q^{T}A
 		return temp_q;
@@ -407,34 +415,40 @@ OrthogonalMatrix QR::GramSchmidt(const Matrix& matrix)
 
 OrthogonalMatrix QR::GramSchmidt(Matrix&& matrix)
 {
+	if (matrix.IsColEqualRank()) throw std::invalid_argument("All column ain't independent!");
 	if (n_ >= m_) {
+		Matrix table(m_, m_);
 		for (size_t i = 0; i < m_; i++) {
 			//Orthogonalize
 			for (size_t j = 0; j < i; j++) {
-				double temp{ Dot(matrix[i], matrix[j]) };
 				for (size_t k = 0; k < n_; k++)
-					matrix[i][k] -= matrix[j][k] * temp;
+					matrix[i][k] -= matrix[j][k] * table[j][i];
 			}
 			//Normalize(q_k = A_k / ||A_k||)
 			double norm{ L2Norm(matrix[i]) };
 			for (auto& itr : matrix[i]) itr /= norm;
+			for (size_t j = i + 1; j < m_; j++)
+				table[i][j] = Dot(matrix[i], matrix[j]);//table[i][j] == q_i dot a_j
 		}
 		r_ = matrix.Transpose() * matrix;//R = Q^{T}A
-		return std::move(matrix);
+		return matrix;
 	}
 	else {
+		Matrix table(n_, n_);
 		for (size_t i = 0; i < n_; i++) {
 			//Orthogonalize
 			for (size_t j = 0; j < i; j++) {
-				double temp{ Dot(matrix[i], matrix[j]) };
 				for (size_t k = 0; k < n_; k++)
-					matrix[i][k] -= matrix[j][k] * temp;
+					matrix[i][k] -= matrix[j][k] * table[j][i];
 			}
+
 			//Normalize(q_k = A_k / ||A_k||)
 			double norm{ L2Norm(matrix[i]) };
 			for (auto& itr : matrix[i]) itr /= norm;
+			for (size_t j = i + 1; j < n_; j++)
+				table[i][j] = Dot(matrix[i], matrix[j]);//table[i][j] == q_i dot a_j
 		}
 		r_ = matrix.Transpose() * matrix;//R = Q^{T}A
-		return std::move(matrix);
+		return matrix;
 	}
 }

@@ -33,6 +33,9 @@ public://Manipulate
 	void PrintMatrix() const;//Print the matrix 
 	bool IsSquare() const { return n_ == m_; }
 	bool IsOrthogonal() const;
+	unsigned int Rank() const;
+	bool IsColEqualRank() const;
+	bool IsInvertible() const;
 public://Constructor and Destructor
 	Matrix() : n_(size_t()), m_(size_t()) {}
 	Matrix(const size_t& n, const size_t& m) :n_(n), m_(m) {
