@@ -5,20 +5,13 @@ int main() {
 	size_t n, m;
 	std::cin >> n >> m;
 	Matrix A(n, m);
+	Matrix B(n, m);
 	A.StdInsert();
-
-	LU lu(A);
-	lu.PrintLU();
-
-	try
-	{
-		QR qr(A);
-		qr.PrintQR();
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << e.what() << '\n';
-	}
+	B.StdInsert();
 	
+	std::cout << A + B << std::endl;
+	std::cout << A - B << std::endl;
+	std::cout << A * B << std::endl;
+	std::cout << A.Power(3) << std::endl;
 	
 }

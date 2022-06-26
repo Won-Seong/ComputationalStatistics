@@ -2,7 +2,8 @@
 
 Matrix Matrix::operator+(const Matrix& B) const
 {
-	if (B.n_ != n_ || B.m_ != m_) throw std::invalid_argument("Size error!");
+	//If the argument matrix is not conformable, throw error.
+	if (B.n_ != n_ || B.m_ != m_) throw std::invalid_argument("It's not conformable!");
 	Matrix temp_matrix{ *this };
 	for (size_t i = 0; i < n_; i++)
 		for (size_t j = 0; j < m_; j++)
@@ -12,7 +13,8 @@ Matrix Matrix::operator+(const Matrix& B) const
 
 Matrix Matrix::operator-(const Matrix& B) const
 {
-	if (B.n_ != n_ || B.m_ != m_) throw std::invalid_argument("Size error!");
+	//If the argument matrix is not conformable, throw error.
+	if (B.n_ != n_ || B.m_ != m_) throw std::invalid_argument("It's not conformable!");
 	Matrix temp_matrix{ *this };
 	for (size_t i = 0; i < n_; i++)
 		for (size_t j = 0; j < m_; j++)
@@ -22,7 +24,8 @@ Matrix Matrix::operator-(const Matrix& B) const
 
 Matrix Matrix::operator*(const Matrix& B) const
 {
-	if (m_ != B.n_) throw std::invalid_argument("Size error!");
+	//If the argument matrix is not conformable, throw error.
+	if (m_ != B.n_) throw std::invalid_argument("It's not conformable!");
 	Matrix temp_matrix(n_, B.m_);
 	double temp_number{ double() };
 	for (size_t i = 0; i < n_; i++) {
@@ -37,7 +40,8 @@ Matrix Matrix::operator*(const Matrix& B) const
 
 Vector Matrix::operator*(const Vector& x) const
 {
-	if (m_ != x.size()) throw std::invalid_argument("Size error!");
+	//If the argument matrix is not conformable, throw error.
+	if (m_ != x.size()) throw std::invalid_argument("It's not conformable!");
 	Vector temp_vector(n_, 0);
 	for (size_t i = 0; i < n_; i++)
 		for (size_t j = 0; j < m_; j++)
@@ -47,7 +51,8 @@ Vector Matrix::operator*(const Vector& x) const
 
 Matrix Matrix::operator^(const unsigned int& k) const
 {
-	if (!IsSquare()) throw std::logic_error("This matrix is not square!");
+	//If it's not a square matrix, throw error.
+	if (!IsSquare()) throw std::logic_error("It's not conformable!");
 	Matrix temp_matrix{ *this };
 	for (unsigned int i = 1; i < k; i++)
 		temp_matrix *= *this;
@@ -95,7 +100,7 @@ void Matrix::operator-=(const Matrix& B)
 			matrix_[i][j] -= B.matrix_[i][j];
 }
 
-void Matrix::operator*=(const Matrix& B)
+void Matrix::operator*=(const Matrix& B) 
 {
 	*this = std::move(operator*(B));
 }
@@ -107,7 +112,7 @@ void Matrix::operator^=(const unsigned int& k)
 
 void Matrix::set_size(const size_t& n, const size_t& m)
 {
-	if (!matrix_.empty()) std::cout << "Matrix is not empty!" << std::endl;
+	if (!matrix_.empty()) throw std::logic_error("Matrix is not empty!");
 	else {
 		n_ = n, m_ = m;
 		matrix_.resize(m_);
@@ -312,6 +317,16 @@ std::ostream& operator<<(std::ostream& os, const Vector& x)
 {
 	for (const auto& itr : x)
 		os << itr << ' ';
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Matrix& X)
+{
+	for (const auto& itr : X.matrix_) {
+		for (const auto& itr_2 : itr)
+			os << itr_2 << ' ';
+		os << std::endl;
+	}
 	return os;
 }
 

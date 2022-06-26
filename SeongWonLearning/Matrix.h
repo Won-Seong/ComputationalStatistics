@@ -6,23 +6,23 @@ using Vector = std::vector<double>;
 
 class Matrix : public std::exception {
 protected:
-	using Space = std::vector< Vector >;
+	using Space = std::vector< Vector >;//It can be thought as an empty matrix.
 public://Basic matrix ops
-	Matrix operator+(const Matrix&) const;//A + B
-	Matrix operator-(const Matrix&) const;//A - B
-	Matrix operator*(const Matrix&) const;//A * B(Matrix mul)
-	Vector operator*(const Vector&) const;//A * x
-	Matrix operator^(const unsigned int&) const;//A^k
-	void operator+=(const Matrix&);
-	void operator-=(const Matrix&);
-	void operator*=(const Matrix&);
-	void operator^=(const unsigned int&);
-	Matrix Power(const unsigned int&) const;//A^k
-	Matrix Transpose() const;
+	Matrix operator-(const Matrix&) const;//return A - B
+	Matrix operator+(const Matrix&) const;//return A + B
+	Matrix operator*(const Matrix&) const;//return AB(Matrix mul)
+	Vector operator*(const Vector&) const;//return A * x
+	Matrix operator^(const unsigned int&) const;//return A^k
+	void operator+=(const Matrix&);//A = A + B
+	void operator-=(const Matrix&);//A = A - B
+	void operator*=(const Matrix&);//A = AB 
+	void operator^=(const unsigned int&);//A = A^k
+	Matrix Power(const unsigned int&) const;//return A^k
+	Matrix Transpose() const;//return A'
 	Matrix Inverse() const;
-public://Manipulate
-	void Clear() { n_ = size_t(), m_ = size_t(); matrix_.clear(); };
-	bool IsEmpty() const { return matrix_.empty(); }
+public://Matrix manipulation
+	void Clear() { n_ = size_t(), m_ = size_t(); matrix_.clear(); };//Clear this matrix
+	bool IsEmpty() const { return matrix_.empty(); }//If this's empty, return true
 	void set_size(const size_t& n, const size_t& m);
 	void StdInsert();
 	size_t get_n() const;
@@ -69,6 +69,8 @@ protected:
 protected:
 	size_t n_, m_;//The matrix have n rows and m columns.
 	Space matrix_;
+public:
+	friend std::ostream& operator<<(std::ostream&, const Matrix&);
 };
 
 class OrthogonalMatrix : public Matrix {
@@ -115,7 +117,7 @@ public://Const and Dest
 	QR(const Matrix& matrix) : Decomposition(matrix) {
 		q_.set_size(n_, m_);
 		r_.set_size(m_, m_);
-		q_ = std::move( GramSchmidt(matrix) );
+		q_ = std::move(GramSchmidt(matrix));
 	}
 	QR(Matrix&& matrix) : Decomposition(matrix) {
 		q_.set_size(n_, m_);
@@ -139,9 +141,9 @@ private:
 class LU : public Decomposition {
 public://Const and Dest
 	LU(const Matrix& matrix) : Decomposition(matrix) {
-		if (n_ >= m_) 
+		if (n_ >= m_)
 			l_.set_size(n_, m_), u_.set_size(m_, m_), l_ = matrix;
-		else 
+		else
 			l_.set_size(n_, n_), u_.set_size(n_, m_), u_ = matrix;
 		LU_Decomposition();
 	}
@@ -172,4 +174,5 @@ bool IsOrthogonal(const Vector&, const Vector&);
 double L2Norm(const Vector&);
 double L1Norm(const Vector&);
 std::ostream& operator<<(std::ostream&, const Vector&);
+std::ostream& operator<<(std::ostream&, const Matrix&);
 std::istream& operator>>(std::istream&, Vector&);
