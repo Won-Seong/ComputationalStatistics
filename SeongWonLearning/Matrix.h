@@ -19,23 +19,27 @@ public://Basic matrix ops
 	void operator^=(const unsigned int&);//A = A^k
 	Matrix Power(const unsigned int&) const;//return A^k
 	Matrix Transpose() const;//return A'
+	void TransposeInplace();//A = A'
 	Matrix Inverse() const;
 public://Matrix manipulation
 	void Clear() { n_ = size_t(), m_ = size_t(); matrix_.clear(); };//Clear this matrix
 	bool IsEmpty() const { return matrix_.empty(); }//If this's empty, return true
-	void set_size(const size_t& n, const size_t& m);
-	void StdInsert();
-	size_t get_n() const;
-	size_t get_m() const;
-	Space get_matrix() const;
-	Vector& operator[](const size_t& i) { return matrix_[i]; }
-	Vector operator[](const size_t& i) const { return matrix_[i]; }
+	void set_size(const size_t& n, const size_t& m);//Set matrix size
+	void StdInsert();//Insert matrix from upper lefthand
+	size_t get_n() const;//return row_num
+	size_t get_m() const;//return col_num
+	Space get_matrix() const;//return matrix itself
+	Vector& operator[](const size_t& i) { return matrix_[i]; }//return i_th vector reference
+	Vector operator[](const size_t& i) const { return matrix_[i]; }//return i_th vector
 	void PrintMatrix() const;//Print the matrix 
 	bool IsSquare() const { return n_ == m_; }
 	bool IsOrthogonal() const;
-	unsigned int Rank() const;
-	bool IsColEqualRank() const;
-	bool IsInvertible() const;
+	void SwapRow(size_t i, size_t j);//swap i_th row, j_th row
+	void SwapCol(size_t i, size_t j);//swap i_th col, j_th col
+	Matrix RowEchelonForm() const;//return row echelon form of the matrix
+	unsigned int Rank() const;//return the rank of the matrix
+	bool IsColEqualRank() const;//All columns are independent?
+	bool IsInvertible() const;//Is it invertible?
 public://Constructor and Destructor
 	Matrix() : n_(size_t()), m_(size_t()) {}
 	Matrix(const size_t& n, const size_t& m) :n_(n), m_(m) {

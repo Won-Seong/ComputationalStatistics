@@ -73,6 +73,11 @@ Matrix Matrix::Transpose() const
 	return temp_matrix;
 }
 
+void Matrix::TransposeInplace()
+{
+	*this = std::move(Transpose());
+}
+
 //Matrix Matrix::Inverse() const
 //{
 //	if (!IsSquare()) throw std::logic_error("It's not square!");
@@ -86,18 +91,12 @@ Matrix Matrix::Transpose() const
 
 void Matrix::operator+=(const Matrix& B)
 {
-	if (B.n_ != n_ || B.m_ != m_) throw std::invalid_argument("Size error!");
-	for (size_t i = 0; i < n_; i++)
-		for (size_t j = 0; j < m_; j++)
-			matrix_[i][j] += B.matrix_[i][j];
+	*this = std::move(operator+(B));
 }
 
 void Matrix::operator-=(const Matrix& B)
 {
-	if (B.n_ != n_ || B.m_ != m_) throw std::invalid_argument("Size error!");
-	for (size_t i = 0; i < n_; i++)
-		for (size_t j = 0; j < m_; j++)
-			matrix_[i][j] -= B.matrix_[i][j];
+	*this = std::move(operator-(B));
 }
 
 void Matrix::operator*=(const Matrix& B) 
@@ -173,25 +172,79 @@ bool Matrix::IsOrthogonal() const
 	return true;
 }
 
+void Matrix::SwapRow(size_t i, size_t j)
+{
+	if (i < 1 || i > n_ || j < 1 || j > n_) throw std::invalid_argument("The argumnets must be 1 to n!");
+	i -= 1;
+	j -= 1;
+	double temp{ double() };
+	for (size_t k = 0; k < m_; k++) {
+		temp = matrix_[k][i];
+		matrix_[k][i] = matrix_[k][j];
+		matrix_[k][j] = temp;
+	}
+}
+
+void Matrix::SwapCol(size_t i, size_t j)
+{
+	if (i < 1 || i > m_ || j < 1 || j > m_) throw std::invalid_argument("The argumnets must be 1 to m!");
+	i -= 1;
+	j -= 1;
+	double temp{ double() };
+	for (size_t k = 0; k < n_; k++) {
+		temp = matrix_[i][k];
+		matrix_[i][k] = matrix_[j][k];
+		matrix_[j][k] = temp;
+	}
+}
+
+Matrix Matrix::RowEchelonForm() const
+{
+	Matrix temp_matrix{ *this };
+	for (size_t i = 0; i < m_ && i < n_; i++) {//for all columns
+		double diag_i{ temp_matrix[i][i] };
+		if (diag_i) {
+			for (size_t j = i; j < m_; j++) {
+				temp_matrix[j][i] /= diag_i;
+
+			}
+			for (size_t j = i + 1; j < n_; j++) {
+				double ratio{ temp_matrix[i][j] };
+				for (size_t k = i; k < m_; k++) {
+					temp_matrix[k][j] -= ratio * temp_matrix[k][i];
+				}
+			}
+		}
+		else {//if diag_i == 0
+			bool flag{ false };
+			for (size_t j = i + 1; j < n_; j++) {
+				if (temp_matrix[i][j] != 0) {
+					temp_matrix.SwapRow(i + 1, j + 1);
+					flag = true;
+					break;
+				}
+			}
+			if (!flag) continue;
+			else i -= 1;
+		}
+	}
+	return temp_matrix;
+}
+
 unsigned int Matrix::Rank() const
 {
-	unsigned int rank{ 0 };
-	bool flag{ false };
-	Matrix temp_matrix{ *this };
-	for (size_t i = 0; i < m_; i++){
-		flag = false;
-		for (const auto& itr : temp_matrix[i]){
-			if (itr != 0) flag = true;
+	Matrix row_echoelon_form{ RowEchelonForm() };
+	int rank{ int() };
+	for (size_t i = 0; i < n_; i++) {
+		bool flag{ false };
+		for (size_t j = i; j < m_; j++) {
+			if (row_echoelon_form[j][i] != 0) {
+				rank++;
+				flag = true;
+				break;
+			}
 		}
-		
 		if (!flag) break;
-		else rank++;
-
-		for (size_t j = i + 1; j < m_; j++){
-			double temp{temp_matrix[j][i]};
-			for (size_t k = 0; k < n_; k++)
-				temp_matrix[j][k] -= temp;
-		}
 	}
 	return rank;
 }
@@ -322,11 +375,13 @@ std::ostream& operator<<(std::ostream& os, const Vector& x)
 
 std::ostream& operator<<(std::ostream& os, const Matrix& X)
 {
-	for (const auto& itr : X.matrix_) {
-		for (const auto& itr_2 : itr)
-			os << itr_2 << ' ';
-		os << std::endl;
+	for (size_t i = 0; i < X.n_; i++)
+	{
+		for (size_t j = 0; j < X.m_; j++)
+			os << X.matrix_[j][i] << ' ';
+		os << '\n';
 	}
+	std::cout << std::endl;
 	return os;
 }
 
